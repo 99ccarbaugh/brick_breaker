@@ -18,6 +18,7 @@ START_X1 = 700
 START_Y1 = 725
 START_X2 = 500
 START_Y2 = 700
+MOVEMENT_SPEED = 30
 
 class BrickBreaker:
     def __init__(self):
@@ -89,11 +90,19 @@ class BrickBreaker:
     def update_paddle(self, key):
         print(key)
         if key == 'Right':
-            self.paddle_x1 += 40
-            self.paddle_x2 += 40
+            if self.paddle_x1 + MOVEMENT_SPEED <= 1200:
+                self.paddle_x1 += MOVEMENT_SPEED
+                self.paddle_x2 += MOVEMENT_SPEED
+            else:
+                self.paddle_x1 = 1200
+                self.paddle_x2 = 1000
         if key == 'Left':
-            self.paddle_x1 -= 40
-            self.paddle_x2 -= 40
+            if self.paddle_x2 - MOVEMENT_SPEED >= 0:
+                self.paddle_x1 -= MOVEMENT_SPEED
+                self.paddle_x2 -= MOVEMENT_SPEED
+            else:
+                self.paddle_x1 = 200
+                self.paddle_x2 = 0
 
         self.canvas.delete(self.paddle_obj)
         self.paddle_obj = self.canvas.create_rectangle(
@@ -108,8 +117,8 @@ class BrickBreaker:
         while True:
             self.window.update()
             if self.begin:
-                # if not self.crashed:
                 self.window.after(DELAY, self.update_paddle(self.last_key))
+                self.last_key = "None"
                 # Define end state later
                 # else:
                 #     self.begin = False
