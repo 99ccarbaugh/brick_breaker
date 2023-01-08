@@ -14,11 +14,27 @@ BLUE_COLOR = "#0492CF"
 Green_color = "#7BC043"
 BLUE_COLOR_LIGHT = '#67B0CF'
 RED_COLOR_LIGHT = '#EE7E77'
-START_X1 = 700
-START_Y1 = 725
-START_X2 = 500
-START_Y2 = 700
-MOVEMENT_SPEED = 30
+
+TOP_BOUND = 0
+BOTTOM_BOUND = 800
+LEFT_BOUND = 0
+RIGHT_BOUND = 1200
+
+
+PADDLE_START_X1 = 700
+PADDLE_START_Y1 = 725
+PADDLE_START_X2 = 500
+PADDLE_START_Y2 = 700
+
+BALL_START_X1 = 590
+BALL_START_Y1 = 680
+BALL_START_X2 = 610
+BALL_START_Y2 = 700
+
+PADDLE_MOVE_SPEED = 30
+BALL_MOVE_SPEED = 30
+
+
 
 class BrickBreaker:
     def __init__(self):
@@ -52,54 +68,94 @@ class BrickBreaker:
         self.canvas.delete("all")
         # self.initialize_board()
         self.initialize_paddle()
+        self.initialize_ball()
         self.initialize_bricks()
 
-
-
-    # def initialize_board(self):
-        # self.board = []
-        # self.apple_obj = []
-        # self.old_apple_cell = []
-
-        # for i in range(rows):
-        #     for j in range(cols):
-        #         self.board.append((i, j))
-
-        # for i in range(rows):
-        #     self.canvas.create_line(
-        #         i * size_of_board / rows, 0, i * size_of_board / rows, size_of_board,
-        #     )
-
-        # for i in range(cols):
-        #     self.canvas.create_line(
-        #         0, i * size_of_board / cols, size_of_board, i * size_of_board / cols,
-        #     )
-
     def initialize_paddle(self):
-        self.paddle = []
         self.paddle_heading = "None"
-        self.paddle_x1 = 700
-        self.paddle_y1 = 725 
-        self.paddle_x2 = 500
-        self.paddle_y2 = 700
+        self.paddle_x1 = PADDLE_START_X1
+        self.paddle_y1 = PADDLE_START_Y1 
+        self.paddle_x2 = PADDLE_START_X2
+        self.paddle_y2 = PADDLE_START_Y2
         self.paddle_obj = self.canvas.create_rectangle(
             self.paddle_x1, self.paddle_y1, self.paddle_x2, self.paddle_y2, 
             fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
         )
 
+    def initialize_ball(self):
+        # Save ball initial coordinates as global variables
+        # will need ball current position, past position from last iteration and x,y vel
+        self.ball_x1 = BALL_START_X1
+        self.ball_y1 = BALL_START_Y1
+        self.ball_x2 = BALL_START_X2
+        self.ball_y2 = BALL_START_Y2
+
+        self.ball_last_x1 = BALL_START_X1
+        self.ball_last_y1 = BALL_START_Y1
+        self.ball_last_x2 = BALL_START_X2
+        self.ball_last_y2 = BALL_START_Y2
+
+        self.ball_xv = 1
+        self.ball_yv = 0
+
+        self.ball_obj = self.canvas.create_rectangle(
+            self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
+            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
+        )
+
+    def update_ball(self):
+        self.ball_last_x1 = self.ball_x1
+        self.ball_last_y1 = self.ball_y1
+        self.ball_last_x2 = self.ball_x2
+        self.ball_last_y2 = self.ball_y2
+        self.canvas.delete(self.ball_obj)
+
+        # Normal Update
+        self.ball_x1 = self.ball_last_x1 + (self.ball_xv * BALL_MOVE_SPEED)
+        self.ball_y1 = self.ball_last_y1 + (self.ball_yv * BALL_MOVE_SPEED)
+        self.ball_x2 = self.ball_last_x2 + (self.ball_xv * BALL_MOVE_SPEED)
+        self.ball_y2 = self.ball_last_y2 + (self.ball_yv * BALL_MOVE_SPEED)
+
+        # Impacts with walls
+        
+        # Impact with top
+        if self.ball_last_y1 + (self.ball_yv * BALL_MOVE_SPEED) <= TOP_BOUND:
+            self.ball_y1 = 0
+            self.ball_y2 = 20
+            self.ball_yv = self.ball_yv * -1
+
+
+        # Impact with Left
+        if self.ball_last_x1 + (self.ball_xv * BALL_MOVE_SPEED) <= LEFT_BOUND:
+            self.ball_x1 = 0
+            self.ball_x2 = 20
+            self.ball_xv = self.ball_xv * -1
+
+        # Impact with right
+        if self.ball_last_x2 + (self.ball_xv * BALL_MOVE_SPEED) >= RIGHT_BOUND:
+            self.ball_x1 = 1180
+            self.ball_x2 = 1200
+            self.ball_xv = self.ball_xv * -1
+
+        self.ball_obj = self.canvas.create_rectangle(
+            self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
+            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
+        )
+        return
+
     def update_paddle(self, key):
         print(key)
         if key == 'Right':
-            if self.paddle_x1 + MOVEMENT_SPEED <= 1200:
-                self.paddle_x1 += MOVEMENT_SPEED
-                self.paddle_x2 += MOVEMENT_SPEED
+            if self.paddle_x1 + PADDLE_MOVE_SPEED <= 1200:
+                self.paddle_x1 += PADDLE_MOVE_SPEED
+                self.paddle_x2 += PADDLE_MOVE_SPEED
             else:
                 self.paddle_x1 = 1200
                 self.paddle_x2 = 1000
         if key == 'Left':
-            if self.paddle_x2 - MOVEMENT_SPEED >= 0:
-                self.paddle_x1 -= MOVEMENT_SPEED
-                self.paddle_x2 -= MOVEMENT_SPEED
+            if self.paddle_x2 - PADDLE_MOVE_SPEED >= 0:
+                self.paddle_x1 -= PADDLE_MOVE_SPEED
+                self.paddle_x2 -= PADDLE_MOVE_SPEED
             else:
                 self.paddle_x1 = 200
                 self.paddle_x2 = 0
@@ -113,11 +169,15 @@ class BrickBreaker:
     def initialize_bricks(self):
         return
 
+    def update_game(self):
+        self.update_paddle(self.last_key)
+        self.update_ball()
+
     def mainloop(self):
         while True:
             self.window.update()
             if self.begin:
-                self.window.after(DELAY, self.update_paddle(self.last_key))
+                self.window.after(DELAY, self.update_game())
                 self.last_key = "None"
                 # Define end state later
                 # else:
