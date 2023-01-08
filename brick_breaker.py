@@ -26,6 +26,8 @@ PADDLE_START_Y1 = 725
 PADDLE_START_X2 = 500
 PADDLE_START_Y2 = 700
 
+PADDLE_TOP = 725
+
 BALL_START_X1 = 590
 BALL_START_Y1 = 680
 BALL_START_X2 = 610
@@ -95,14 +97,15 @@ class BrickBreaker:
         self.ball_last_x2 = BALL_START_X2
         self.ball_last_y2 = BALL_START_Y2
 
-        self.ball_xv = 1
-        self.ball_yv = 0
+        self.ball_xv = 0
+        self.ball_yv = -1
 
         self.ball_obj = self.canvas.create_rectangle(
             self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
 
+    # X1Y1 is top left, X2Y2 is bottom right
     def update_ball(self):
         self.ball_last_x1 = self.ball_x1
         self.ball_last_y1 = self.ball_y1
@@ -137,12 +140,22 @@ class BrickBreaker:
             self.ball_x2 = 1200
             self.ball_xv = self.ball_xv * -1
 
+        
+        # Impact with Paddle
+        if (self.ball_last_y2 + (self.ball_yv * BALL_MOVE_SPEED) >= PADDLE_TOP and
+            self.ball_last_x1 + (self.ball_xv * BALL_MOVE_SPEED) >= self.paddle_x2 and
+            self.ball_last_x2 + (self.ball_xv * BALL_MOVE_SPEED) <= self.paddle_x1):
+            
+            self.ball_y1 = PADDLE_TOP + 20
+            self.ball_y2 = PADDLE_TOP
+            self.ball_yv = self.ball_yv * -1
+
         self.ball_obj = self.canvas.create_rectangle(
             self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
-        return
 
+    # Done goofed - X1Y1 is top right, X2Y2 is bottom left
     def update_paddle(self, key):
         print(key)
         if key == 'Right':
