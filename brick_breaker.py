@@ -26,12 +26,22 @@ PADDLE_START_Y1 = 725
 PADDLE_START_X2 = 500
 PADDLE_START_Y2 = 700
 
-PADDLE_TOP = 725
+PADDLE_TOP = 700
 
+# Normal
+# BALL_START_X1 = 590
+# BALL_START_Y1 = 680
+# BALL_START_X2 = 610
+# BALL_START_Y2 = 700
+
+#Debug
 BALL_START_X1 = 590
-BALL_START_Y1 = 680
+BALL_START_Y1 = 640
 BALL_START_X2 = 610
-BALL_START_Y2 = 700
+BALL_START_Y2 = 660
+
+BALL_START_XV = 0
+BALL_START_YV = 1
 
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
@@ -97,8 +107,8 @@ class BrickBreaker:
         self.ball_last_x2 = BALL_START_X2
         self.ball_last_y2 = BALL_START_Y2
 
-        self.ball_xv = 0
-        self.ball_yv = -1
+        self.ball_xv = BALL_START_XV
+        self.ball_yv = BALL_START_YV
 
         self.ball_obj = self.canvas.create_rectangle(
             self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
@@ -122,42 +132,42 @@ class BrickBreaker:
         # Impacts with walls
         
         # Impact with top
-        if self.ball_last_y1 + (self.ball_yv * BALL_MOVE_SPEED) <= TOP_BOUND:
+        if self.ball_y1 <= TOP_BOUND:
             self.ball_y1 = 0
             self.ball_y2 = 20
             self.ball_yv = self.ball_yv * -1
 
 
         # Impact with Left
-        if self.ball_last_x1 + (self.ball_xv * BALL_MOVE_SPEED) <= LEFT_BOUND:
+        if self.ball_x1 <= LEFT_BOUND:
             self.ball_x1 = 0
             self.ball_x2 = 20
             self.ball_xv = self.ball_xv * -1
 
         # Impact with right
-        if self.ball_last_x2 + (self.ball_xv * BALL_MOVE_SPEED) >= RIGHT_BOUND:
+        if self.ball_x2 >= RIGHT_BOUND:
             self.ball_x1 = 1180
             self.ball_x2 = 1200
             self.ball_xv = self.ball_xv * -1
 
         
         # Impact with Paddle
-        if (self.ball_last_y2 + (self.ball_yv * BALL_MOVE_SPEED) >= PADDLE_TOP and
-            self.ball_last_x1 + (self.ball_xv * BALL_MOVE_SPEED) >= self.paddle_x2 and
-            self.ball_last_x2 + (self.ball_xv * BALL_MOVE_SPEED) <= self.paddle_x1):
-            
-            self.ball_y1 = PADDLE_TOP + 20
+        if (self.ball_y2 >= PADDLE_TOP and self.ball_x1 >= self.paddle_x2 and self.ball_x2 <= self.paddle_x1):
+            print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball_y1, self.ball_y2))
+            self.ball_y1 = PADDLE_TOP - 20
             self.ball_y2 = PADDLE_TOP
             self.ball_yv = self.ball_yv * -1
+            print("AFTER IMPACT y1: %d, y2: %d" % (self.ball_y1, self.ball_y2))
 
         self.ball_obj = self.canvas.create_rectangle(
             self.ball_x1, self.ball_y1, self.ball_x2, self.ball_y2, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
 
+        
     # Done goofed - X1Y1 is top right, X2Y2 is bottom left
     def update_paddle(self, key):
-        print(key)
+
         if key == 'Right':
             if self.paddle_x1 + PADDLE_MOVE_SPEED <= 1200:
                 self.paddle_x1 += PADDLE_MOVE_SPEED
