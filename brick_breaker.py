@@ -29,19 +29,19 @@ PADDLE_START_TOP_Y = 700
 PADDLE_TOP = 700
 
 # Normal
-# BALL_START_LEFT_X = 590
-# BALL_START_TOP_Y = 680
-# BALL_START_RIGHT_X = 610
-# BALL_START_BOTTOM_Y = 700
-
-#Debug
 BALL_START_LEFT_X = 590
-BALL_START_TOP_Y = 640
+BALL_START_TOP_Y = 680
 BALL_START_RIGHT_X = 610
-BALL_START_BOTTOM_Y = 660
+BALL_START_BOTTOM_Y = 700
+
+# #Debug
+# BALL_START_LEFT_X = 0
+# BALL_START_TOP_Y = 710
+# BALL_START_RIGHT_X = 20
+# BALL_START_BOTTOM_Y = 730
 
 BALL_START_XV = 0
-BALL_START_YV = 1
+BALL_START_YV = -1
 
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
@@ -155,25 +155,42 @@ class BrickBreaker:
         # Impact with Paddle possible
         if self.ball_bottom_y >= PADDLE_TOP:
             # Impact with top
+            print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
+            % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
             if self.ball_left_x >= self.paddle_left_x and self.ball_right_x <= self.paddle_right_x:
                 print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))
                 self.ball_top_y = PADDLE_TOP - 20
                 self.ball_bottom_y = PADDLE_TOP
+                self.update_ball_vels()
                 self.ball_yv = self.ball_yv * -1
-                print("AFTER IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))
+                print("AFTER IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))\
 
-            # Impact with left side
-            if self.ball_right_x >= 
+            # Believe this problem will be solved by adding paddle physics
+
+            # Potential collision issues with 2 moving objects
+            # # Impact with left side
+            # if self.ball_right_x >= self.paddle_left_x and self.ball_left_x < self.paddle_left_x and self.ball_top_y >= self.paddle_bottom_y and self.ball_bottom_y <= self.paddle_top_y:
+            #     print("left side impact")
         
 
-            # Impact with right side
+            # # Impact with right side
 
         self.ball_obj = self.canvas.create_rectangle(
             self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
 
-        
+    def update_ball_vels(self):
+        # Get x value for center of ball
+        ball_center = int((self.ball_right_x + self.ball_left_x) /2)
+        # Adjust center value to be relative to a hypothetical paddle from 0 to 200
+        ball_center_relative = ball_center - self.paddle_left_x
+        ball_dist = ball_center_relative - 100
+        ball_dist_scaled = int(ball_dist / 10)
+        print("Ball center relative: %d\nBall dist: %d\nBall dist scaled: %d" %(ball_center_relative, ball_dist, ball_dist_scaled))
+        self.ball_xv = ball_dist_scaled / 10
+        return
+
     # Done goofed - X1Y1 is top right, X2Y2 is bottom left
     def update_paddle(self, key):
 
