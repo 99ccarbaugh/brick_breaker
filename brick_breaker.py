@@ -27,6 +27,7 @@ PADDLE_START_LEFT_X = 500
 PADDLE_START_TOP_Y = 700
 
 PADDLE_TOP = 700
+PADDLE_WIDTH = 200
 
 # Normal
 BALL_START_LEFT_X = 590
@@ -56,6 +57,7 @@ class BrickBreaker:
         self.canvas.pack()
         self.window.bind("<Key>", self.key_input)
         self.window.bind("<Button-1>", self.mouse_input)
+        self.window.bind("<Motion>", self.motion)
         self.play_again()
         self.begin = False
 
@@ -157,7 +159,7 @@ class BrickBreaker:
             # Impact with top
             # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
             # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
-            
+
             if self.ball_right_x >= self.paddle_left_x and self.ball_left_x <= self.paddle_right_x:
                 print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))
                 self.ball_top_y = PADDLE_TOP - 20
@@ -193,34 +195,27 @@ class BrickBreaker:
         return
 
     # Done goofed - X1Y1 is top right, X2Y2 is bottom left
-    def update_paddle(self, key):
 
-        if key == 'Right':
-            if self.paddle_right_x + PADDLE_MOVE_SPEED <= 1200:
-                self.paddle_right_x += PADDLE_MOVE_SPEED
-                self.paddle_left_x += PADDLE_MOVE_SPEED
-            else:
-                self.paddle_right_x = 1200
-                self.paddle_left_x = 1000
-        if key == 'Left':
-            if self.paddle_left_x - PADDLE_MOVE_SPEED >= 0:
-                self.paddle_right_x -= PADDLE_MOVE_SPEED
-                self.paddle_left_x -= PADDLE_MOVE_SPEED
-            else:
-                self.paddle_right_x = 200
-                self.paddle_left_x = 0
-
+    def update_paddle(self, mouse_x):
+        paddle_center = (self.paddle_left_x + self.paddle_right_x) / 2
+        x_delta = mouse_x - paddle_center
+        self.paddle_left_x += x_delta
+        self.paddle_right_x += x_delta
+        
         self.canvas.delete(self.paddle_obj)
         self.paddle_obj = self.canvas.create_rectangle(
             self.paddle_right_x, self.paddle_bottom_y, self.paddle_left_x, self.paddle_top_y, 
             fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
         )
 
+    def motion(self, event):
+        # print("Mouse position: (%s %s)" % (event.x, event.y))
+        self.update_paddle(event.x)
+
     def initialize_bricks(self):
         return
 
     def update_game(self):
-        self.update_paddle(self.last_key)
         self.update_ball()
 
     def mainloop(self):
