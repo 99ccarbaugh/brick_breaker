@@ -153,11 +153,12 @@ class BrickBreaker:
 
         
         # Impact with Paddle possible
-        if self.ball_bottom_y >= PADDLE_TOP:
+        if self.ball_bottom_y >= PADDLE_TOP and self.ball_top_y <= self.paddle_top_y:
             # Impact with top
-            print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
-            % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
-            if self.ball_left_x >= self.paddle_left_x and self.ball_right_x <= self.paddle_right_x:
+            # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
+            # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
+            
+            if self.ball_right_x >= self.paddle_left_x and self.ball_left_x <= self.paddle_right_x:
                 print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))
                 self.ball_top_y = PADDLE_TOP - 20
                 self.ball_bottom_y = PADDLE_TOP
