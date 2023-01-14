@@ -11,7 +11,7 @@ import numpy as np
 DELAY = 100
 RED_COLOR = "#EE4035"
 BLUE_COLOR = "#0492CF"
-Green_color = "#7BC043"
+GREEN_COLOR  = "#7BC043"
 BLUE_COLOR_LIGHT = '#67B0CF'
 RED_COLOR_LIGHT = '#EE7E77'
 
@@ -48,6 +48,18 @@ PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
 
 
+class Brick:
+    def __init__(self, id, left, right, top, bottom,):
+        self.id = id
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+    
+    def draw_brick(self, canvas):
+        self.brick_rec = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
+        fill=GREEN_COLOR, outline=BLUE_COLOR)
+
 
 class BrickBreaker:
     def __init__(self):
@@ -80,7 +92,6 @@ class BrickBreaker:
     
     def play_again(self):
         self.canvas.delete("all")
-        # self.initialize_board()
         self.initialize_paddle()
         self.initialize_ball()
         self.initialize_bricks()
@@ -213,7 +224,11 @@ class BrickBreaker:
         self.update_paddle(event.x)
 
     def initialize_bricks(self):
-        return
+        self.bricks = []
+        for i in range(0, 1):
+            print("i: %s" % i)
+            self.bricks.append(Brick(i, 580, 620, 200, 220))
+            self.bricks[i].draw_brick(self.canvas)
 
     def update_game(self):
         self.update_ball()
