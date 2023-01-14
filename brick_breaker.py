@@ -30,19 +30,19 @@ PADDLE_TOP = 700
 PADDLE_WIDTH = 200
 
 # Normal
-BALL_START_LEFT_X = 590
-BALL_START_TOP_Y = 680
-BALL_START_RIGHT_X = 610
-BALL_START_BOTTOM_Y = 700
+# BALL_START_LEFT_X = 590
+# BALL_START_TOP_Y = 680
+# BALL_START_RIGHT_X = 610
+# BALL_START_BOTTOM_Y = 700
 
-# #Debug
-# BALL_START_LEFT_X = 0
-# BALL_START_TOP_Y = 710
-# BALL_START_RIGHT_X = 20
-# BALL_START_BOTTOM_Y = 730
+# Debug
+BALL_START_LEFT_X = 10
+BALL_START_TOP_Y = 205
+BALL_START_RIGHT_X = 30
+BALL_START_BOTTOM_Y = 225
 
-BALL_START_XV = 0
-BALL_START_YV = -1
+BALL_START_XV = 1
+BALL_START_YV = 0
 
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
@@ -230,8 +230,55 @@ class BrickBreaker:
             self.bricks.append(Brick(i, 580, 620, 200, 220))
             self.bricks[i].draw_brick(self.canvas)
 
+    def check_bricks(self):
+        for brick in self.bricks:
+            # Could nest some of these ifs (TOP/Bottom + Left/Right)
+            # Bottom
+            if self.ball_top_y <= brick.bottom and self.ball_bottom_y >= brick.bottom and self.ball_right_x >= brick.left and self.ball_left_x <= brick.right:
+                print("IMPACT Bottom")
+                self.ball_yv = self.ball_yv * -1
+                self.ball_last_top_y = self.ball_top_y
+                self.ball_last_bottom_y = self.ball_bottom_y
+
+                self.ball_top_y = brick.bottom
+                self.ball_bottom_y = brick.bottom + 20
+
+
+            # Top
+            elif self.ball_top_y <= brick.top and self.ball_bottom_y >= brick.top and self.ball_right_x >= brick.left and self.ball_left_x <= brick.right:
+                print("IMPACT Top")
+                self.ball_yv = self.ball_yv * -1
+                self.ball_last_top_y = self.ball_top_y
+                self.ball_last_bottom_y = self.ball_bottom_y
+
+                self.ball_top_y = brick.top - 20
+                self.ball_bottom_y = brick.top
+
+            # Left
+
+            elif self.ball_right_x >= brick.left and self.ball_left_x <= brick.left and self.ball_top_y <= brick.bottom and self.ball_bottom_y >= brick.top:
+                print("IMPACT Left")
+                self.ball_xv = self.ball_xv * -1
+                self.ball_last_left_x = self.ball_left_x
+                self.ball_last_right_x = self.ball_right_x
+
+                self.ball_left_x = brick.left - 20
+                self.ball_right_x = brick.left
+
+            # Right
+
+
+            self.canvas.delete(self.ball_obj)
+            self.ball_obj = self.canvas.create_rectangle(
+                self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
+                fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
+            )
+            return
+
+
     def update_game(self):
         self.update_ball()
+        self.check_bricks()
 
     def mainloop(self):
         while True:
