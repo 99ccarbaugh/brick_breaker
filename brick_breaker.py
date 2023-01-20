@@ -47,19 +47,53 @@ BALL_START_YV = 0
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
 
-
-class Brick:
-    def __init__(self, id, left, right, top, bottom,):
+class RectObj:
+    def __init__(self, id, left, right, top, bottom, fill_color, border_color, canvas):
         self.id = id
         self.left = left
         self.right = right
         self.top = top
         self.bottom = bottom
-    
-    def draw_brick(self, canvas):
-        self.brick_rec = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
-        fill=GREEN_COLOR, outline=BLUE_COLOR)
+        self.fill_color = fill_color
+        self.border_color = border_color
 
+        self.draw_rect(canvas)
+
+    def draw_rect(self, canvas):
+        self.rect_obj = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
+        fill=self.fill_color, outline=self.border_color)
+
+class Brick(RectObj):
+    pass
+
+class Paddle(RectObj):
+    pass
+    
+class Ball(RectObj):
+    def __init__(self, left, right, top, bottom, fill_color, border_color, canvas):
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+
+        self.last_left = left
+        self.last_right = right
+        self.last_top = top
+        self.last_bottom = bottom
+
+        self.x_vel = 0
+        self.y_vel = -1
+
+        self.fill_color = fill_color
+        self.border_color = border_color
+
+        self.draw_ball(canvas)
+
+    def draw_ball(self, canvas):
+        self.ball_obj = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
+        fill=self.fill_color, outline=self.border_color)
+
+    
 
 class BrickBreaker:
     def __init__(self):
@@ -87,55 +121,13 @@ class BrickBreaker:
             return False
 
 
-    def mouse_input(self, event):
-        self.play_again()
-    
-    def play_again(self):
-        self.canvas.delete("all")
-        self.initialize_paddle()
-        self.initialize_ball()
-        self.initialize_bricks()
-
-    def initialize_paddle(self):
-        self.paddle_heading = "None"
-        self.paddle_right_x = PADDLE_START_RIGHT_X
-        self.paddle_bottom_y = PADDLE_START_BOTTOM_Y 
-        self.paddle_left_x = PADDLE_START_LEFT_X
-        self.paddle_top_y = PADDLE_START_TOP_Y
-        self.paddle_obj = self.canvas.create_rectangle(
-            self.paddle_right_x, self.paddle_bottom_y, self.paddle_left_x, self.paddle_top_y, 
-            fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
-        )
-
-    def initialize_ball(self):
-        # Save ball initial coordinates as global variables
-        # will need ball current position, past position from last iteration and x,y vel
-        self.ball_left_x = BALL_START_LEFT_X
-        self.ball_top_y = BALL_START_TOP_Y
-        self.ball_right_x = BALL_START_RIGHT_X
-        self.ball_bottom_y = BALL_START_BOTTOM_Y
-
-        self.ball_last_left_x = BALL_START_LEFT_X
-        self.ball_last_top_y = BALL_START_TOP_Y
-        self.ball_last_right_x = BALL_START_RIGHT_X
-        self.ball_last_bottom_y = BALL_START_BOTTOM_Y
-
-        self.ball_xv = BALL_START_XV
-        self.ball_yv = BALL_START_YV
-
-        self.ball_obj = self.canvas.create_rectangle(
-            self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
-            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
-        )
-
-
     # X1Y1 is top left, X2Y2 is bottom right
     def update_ball(self):
-        self.ball_last_left_x = self.ball_left_x
-        self.ball_last_top_y = self.ball_top_y
-        self.ball_last_right_x = self.ball_right_x
-        self.ball_last_bottom_y = self.ball_bottom_y
-        self.canvas.delete(self.ball_obj)
+        self.last_left = self.left
+        self.last_top = self.top
+        self.last_right = self.right
+        self.last_bottom = self.bottom
+        self.canvas.delete(self.rect_obj)
 
         # Normal Update
         self.ball_left_x = self.ball_last_left_x + (self.ball_xv * BALL_MOVE_SPEED)
@@ -193,6 +185,51 @@ class BrickBreaker:
             self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
+
+
+    def mouse_input(self, event):
+        self.play_again()
+    
+    def play_again(self):
+        self.canvas.delete("all")
+        self.initialize_paddle()
+        self.initialize_ball()
+        self.initialize_bricks()
+
+    def initialize_paddle(self):
+        self.paddle_heading = "None"
+        self.paddle_right_x = PADDLE_START_RIGHT_X
+        self.paddle_bottom_y = PADDLE_START_BOTTOM_Y 
+        self.paddle_left_x = PADDLE_START_LEFT_X
+        self.paddle_top_y = PADDLE_START_TOP_Y
+        self.paddle_obj = self.canvas.create_rectangle(
+            self.paddle_right_x, self.paddle_bottom_y, self.paddle_left_x, self.paddle_top_y, 
+            fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
+        )
+
+    def initialize_ball(self):
+        # Save ball initial coordinates as global variables
+        # will need ball current position, past position from last iteration and x,y vel
+        self.ball_left_x = BALL_START_LEFT_X
+        self.ball_top_y = BALL_START_TOP_Y
+        self.ball_right_x = BALL_START_RIGHT_X
+        self.ball_bottom_y = BALL_START_BOTTOM_Y
+
+        self.ball_last_left_x = BALL_START_LEFT_X
+        self.ball_last_top_y = BALL_START_TOP_Y
+        self.ball_last_right_x = BALL_START_RIGHT_X
+        self.ball_last_bottom_y = BALL_START_BOTTOM_Y
+
+        self.ball_xv = BALL_START_XV
+        self.ball_yv = BALL_START_YV
+
+        self.ball_obj = self.canvas.create_rectangle(
+            self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
+            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
+        )
+
+
+    
 
     def update_ball_vels(self):
         # Get x value for center of ball
