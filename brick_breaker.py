@@ -126,7 +126,13 @@ class BrickBreaker:
             return True
         else:
             return False
+            
 
+    # Obj can be either paddle or brick
+    # Returns face of obj that was struck (Left, Right, Top, Bottom)\
+    # Should this be a member of the RectObj Class?
+    def check_impact(self, obj):
+        print('Overlap')
 
     # X1Y1 is top left, X2Y2 is bottom right
     def update_ball(self):
@@ -163,6 +169,14 @@ class BrickBreaker:
             self.ball.right = 1200
             self.ball.x_vel = self.ball.x_vel * -1
 
+
+        # if statement to see if ball is overlapping with the paddle
+        width_positive = min(self.ball.right, self.paddle.right) >= max(self.ball.left, self.paddle.left)
+        height_positive = min(self.ball.bottom, self.paddle.bottom) >= max(self.ball.top, self.paddle.top)
+        ball_paddle_overlap = width_positive and height_positive
+        # print("width: %s, height: %s, overlap: %s" % (width_positive, height_positive, ball_paddle_overlap))
+        if ball_paddle_overlap:
+            self.check_impact(self.paddle)
         
         # Impact with Paddle possible
         if self.ball.bottom >= PADDLE_TOP and self.ball.top <= self.paddle.top:
@@ -188,7 +202,6 @@ class BrickBreaker:
 
             # # Impact with right side
         self.ball.draw_ball(self.canvas)
-
 
 
     def mouse_input(self, event):
