@@ -70,7 +70,8 @@ class Paddle(RectObj):
     pass
     
 class Ball(RectObj):
-    def __init__(self, left, right, top, bottom, fill_color, border_color, canvas):
+    def __init__(self, id, left, right, top, bottom, fill_color, border_color, canvas):
+        self.id = id
         self.left = left
         self.right = right
         self.top = top
@@ -123,53 +124,53 @@ class BrickBreaker:
 
     # X1Y1 is top left, X2Y2 is bottom right
     def update_ball(self):
-        self.last_left = self.left
-        self.last_top = self.top
-        self.last_right = self.right
-        self.last_bottom = self.bottom
-        self.canvas.delete(self.rect_obj)
+        self.ball.last_left = self.ball.left
+        self.ball.last_top = self.ball.top
+        self.ball.last_right = self.ball.right
+        self.ball.last_bottom = self.ball.bottom
+        self.canvas.delete(self.ball.ball_obj)
 
         # Normal Update
-        self.ball_left_x = self.ball_last_left_x + (self.ball_xv * BALL_MOVE_SPEED)
-        self.ball_top_y = self.ball_last_top_y + (self.ball_yv * BALL_MOVE_SPEED)
-        self.ball_right_x = self.ball_last_right_x + (self.ball_xv * BALL_MOVE_SPEED)
-        self.ball_bottom_y = self.ball_last_bottom_y + (self.ball_yv * BALL_MOVE_SPEED)
+        self.ball.left = self.ball.last_left + (self.ball.x_vel * BALL_MOVE_SPEED)
+        self.ball.top = self.ball.last_top + (self.ball.y_vel * BALL_MOVE_SPEED)
+        self.ball.right = self.ball.last_right + (self.ball.x_vel * BALL_MOVE_SPEED)
+        self.ball.bottom = self.ball.last_bottom + (self.ball.y_vel * BALL_MOVE_SPEED)
 
         # Impacts with walls
         
         # Impact with top
-        if self.ball_top_y <= TOP_BOUND:
-            self.ball_top_y = 0
-            self.ball_bottom_y = 20
-            self.ball_yv = self.ball_yv * -1
+        if self.ball.top <= TOP_BOUND:
+            self.ball.top = 0
+            self.ball.bottom = 20
+            self.ball.y_vel = self.ball.y_vel * -1
 
 
         # Impact with Left
-        if self.ball_left_x <= LEFT_BOUND:
-            self.ball_left_x = 0
-            self.ball_right_x = 20
-            self.ball_xv = self.ball_xv * -1
+        if self.ball.left <= LEFT_BOUND:
+            self.ball.left = 0
+            self.ball.right = 20
+            self.ball.x_vel = self.ball.x_vel * -1
 
         # Impact with right
-        if self.ball_right_x >= RIGHT_BOUND:
-            self.ball_left_x = 1180
-            self.ball_right_x = 1200
-            self.ball_xv = self.ball_xv * -1
+        if self.ball.right >= RIGHT_BOUND:
+            self.ball.left = 1180
+            self.ball.right = 1200
+            self.ball.x_vel = self.ball.x_vel * -1
 
         
         # Impact with Paddle possible
-        if self.ball_bottom_y >= PADDLE_TOP and self.ball_top_y <= self.paddle_top_y:
+        if self.ball.bottom >= PADDLE_TOP and self.ball.top <= self.paddle.top:
             # Impact with top
             # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
             # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
 
-            if self.ball_right_x >= self.paddle_left_x and self.ball_left_x <= self.paddle_right_x:
-                print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))
-                self.ball_top_y = PADDLE_TOP - 20
-                self.ball_bottom_y = PADDLE_TOP
+            if self.ball.right >= self.paddle.left and self.ball.left <= self.paddle.right:
+                print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))
+                self.ball.top = PADDLE_TOP - 20
+                self.ball.bottom = PADDLE_TOP
                 self.update_ball_vels()
-                self.ball_yv = self.ball_yv * -1
-                print("AFTER IMPACT y1: %d, y2: %d" % (self.ball_top_y, self.ball_bottom_y))\
+                self.ball.y_vel = self.ball.y_vel * -1
+                print("AFTER IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))\
 
             # Believe this problem will be solved by adding paddle physics
 
@@ -181,8 +182,8 @@ class BrickBreaker:
 
             # # Impact with right side
 
-        self.ball_obj = self.canvas.create_rectangle(
-            self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
+        self.ball.ball_obj = self.canvas.create_rectangle(
+            self.ball.left, self.ball.top, self.ball.right, self.ball.bottom, 
             fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
         )
 
@@ -192,9 +193,21 @@ class BrickBreaker:
     
     def play_again(self):
         self.canvas.delete("all")
-        self.initialize_paddle()
-        self.initialize_ball()
+        self.initialize_game_objs()
+        # self.initialize_paddle()
+        # self.initialize_ball()
+        # self.initialize_bricks()
+
+    def initialize_game_objs(self):
+        # Initialize paddle
+        self.paddle = Paddle(0, PADDLE_START_LEFT_X, PADDLE_START_RIGHT_X, PADDLE_START_TOP_Y, PADDLE_START_BOTTOM_Y,
+            RED_COLOR_LIGHT, BLUE_COLOR, self.canvas)
+        # Initialize ball
+        self.ball = Ball(0, BALL_START_LEFT_X, BALL_START_RIGHT_X, BALL_START_TOP_Y, BALL_START_BOTTOM_Y,
+            BLUE_COLOR_LIGHT, RED_COLOR, self.canvas)
+        # Initialize Bricks
         self.initialize_bricks()
+        return
 
     def initialize_paddle(self):
         self.paddle_heading = "None"
@@ -264,14 +277,14 @@ class BrickBreaker:
         self.bricks = []
         for i in range(0, 1):
             print("i: %s" % i)
-            self.bricks.append(Brick(i, 580, 620, 200, 220))
-            self.bricks[i].draw_brick(self.canvas)
+            self.bricks.append(Brick(i, 580, 620, 200, 220, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas))
+            # self.bricks[i].draw_brick(self.canvas)
 
     def check_bricks(self):
         for brick in self.bricks:
             # Could nest some of these ifs (TOP/Bottom + Left/Right)
             # Bottom
-            if self.ball_top_y <= brick.bottom and self.ball_bottom_y >= brick.bottom and self.ball_right_x >= brick.left and self.ball_left_x <= brick.right:
+            if self.ball.top <= brick.bottom and self.ball.bottom >= brick.bottom and self.ball.right >= brick.left and self.ball.left <= brick.right:
                 print("IMPACT Bottom")
                 self.ball_yv = self.ball_yv * -1
                 self.ball_last_top_y = self.ball_top_y
@@ -315,7 +328,7 @@ class BrickBreaker:
 
     def update_game(self):
         self.update_ball()
-        self.check_bricks()
+        # self.check_bricks()
 
     def mainloop(self):
         while True:
