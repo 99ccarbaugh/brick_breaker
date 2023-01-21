@@ -181,11 +181,8 @@ class BrickBreaker:
         
 
             # # Impact with right side
+        self.ball.draw_ball(self.canvas)
 
-        self.ball.ball_obj = self.canvas.create_rectangle(
-            self.ball.left, self.ball.top, self.ball.right, self.ball.bottom, 
-            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
-        )
 
 
     def mouse_input(self, event):
@@ -194,9 +191,6 @@ class BrickBreaker:
     def play_again(self):
         self.canvas.delete("all")
         self.initialize_game_objs()
-        # self.initialize_paddle()
-        # self.initialize_ball()
-        # self.initialize_bricks()
 
     def initialize_game_objs(self):
         # Initialize paddle
@@ -208,66 +202,29 @@ class BrickBreaker:
         # Initialize Bricks
         self.initialize_bricks()
         return
-
-    def initialize_paddle(self):
-        self.paddle_heading = "None"
-        self.paddle_right_x = PADDLE_START_RIGHT_X
-        self.paddle_bottom_y = PADDLE_START_BOTTOM_Y 
-        self.paddle_left_x = PADDLE_START_LEFT_X
-        self.paddle_top_y = PADDLE_START_TOP_Y
-        self.paddle_obj = self.canvas.create_rectangle(
-            self.paddle_right_x, self.paddle_bottom_y, self.paddle_left_x, self.paddle_top_y, 
-            fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
-        )
-
-    def initialize_ball(self):
-        # Save ball initial coordinates as global variables
-        # will need ball current position, past position from last iteration and x,y vel
-        self.ball_left_x = BALL_START_LEFT_X
-        self.ball_top_y = BALL_START_TOP_Y
-        self.ball_right_x = BALL_START_RIGHT_X
-        self.ball_bottom_y = BALL_START_BOTTOM_Y
-
-        self.ball_last_left_x = BALL_START_LEFT_X
-        self.ball_last_top_y = BALL_START_TOP_Y
-        self.ball_last_right_x = BALL_START_RIGHT_X
-        self.ball_last_bottom_y = BALL_START_BOTTOM_Y
-
-        self.ball_xv = BALL_START_XV
-        self.ball_yv = BALL_START_YV
-
-        self.ball_obj = self.canvas.create_rectangle(
-            self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
-            fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
-        )
-
-
-    
+   
 
     def update_ball_vels(self):
         # Get x value for center of ball
-        ball_center = int((self.ball_right_x + self.ball_left_x) /2)
+        ball_center = int((self.ball.right + self.ball.left) /2)
         # Adjust center value to be relative to a hypothetical paddle from 0 to 200
-        ball_center_relative = ball_center - self.paddle_left_x
+        ball_center_relative = ball_center - self.paddle.left
         ball_dist = ball_center_relative - 100
         ball_dist_scaled = int(ball_dist / 10)
         print("Ball center relative: %d\nBall dist: %d\nBall dist scaled: %d" %(ball_center_relative, ball_dist, ball_dist_scaled))
-        self.ball_xv = ball_dist_scaled / 10
+        self.ball.x_vel = ball_dist_scaled / 10
         return
 
     # Done goofed - X1Y1 is top right, X2Y2 is bottom left
 
     def update_paddle(self, mouse_x):
-        paddle_center = (self.paddle_left_x + self.paddle_right_x) / 2
+        paddle_center = (self.paddle.left + self.paddle.right) / 2
         x_delta = mouse_x - paddle_center
-        self.paddle_left_x += x_delta
-        self.paddle_right_x += x_delta
+        self.paddle.left += x_delta
+        self.paddle.right += x_delta
         
-        self.canvas.delete(self.paddle_obj)
-        self.paddle_obj = self.canvas.create_rectangle(
-            self.paddle_right_x, self.paddle_bottom_y, self.paddle_left_x, self.paddle_top_y, 
-            fill=RED_COLOR_LIGHT, outline=BLUE_COLOR
-        )
+        self.canvas.delete(self.paddle.rect_obj)
+        self.paddle.draw_rect(self.canvas)
 
     def motion(self, event):
         # print("Mouse position: (%s %s)" % (event.x, event.y))
