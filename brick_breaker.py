@@ -229,11 +229,9 @@ class BrickBreaker:
         self.paddle.left += x_delta
         self.paddle.right += x_delta
         
-        # self.canvas.delete(self.paddle.rect_obj)
         self.paddle.draw_rect(self.canvas)
 
     def motion(self, event):
-        # print("Mouse position: (%s %s)" % (event.x, event.y))
         self.update_paddle(event.x)
 
     def initialize_bricks(self):
@@ -241,7 +239,6 @@ class BrickBreaker:
         for i in range(0, 1):
             print("i: %s" % i)
             self.bricks.append(Brick(i, 580, 620, 200, 220, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas))
-            # self.bricks[i].draw_brick(self.canvas)
 
     def check_bricks(self):
         for brick in self.bricks:
@@ -281,12 +278,9 @@ class BrickBreaker:
             # Right
 
 
-            # self.canvas.delete(self.ball.ball_obj)
+
             self.ball.draw_ball(self.canvas)
-            # self.ball_obj = self.canvas.create_rectangle(
-            #     self.ball_left_x, self.ball_top_y, self.ball_right_x, self.ball_bottom_y, 
-            #     fill=BLUE_COLOR_LIGHT, outline=RED_COLOR
-            # )
+
             return
 
 
