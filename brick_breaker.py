@@ -29,6 +29,8 @@ PADDLE_START_TOP_Y = 700
 PADDLE_TOP = 700
 PADDLE_WIDTH = 200
 
+
+
 # Normal
 # BALL_START_LEFT_X = 590
 # BALL_START_TOP_Y = 680
@@ -36,10 +38,13 @@ PADDLE_WIDTH = 200
 # BALL_START_BOTTOM_Y = 700
 
 # Debug
-BALL_START_LEFT_X = 10
-BALL_START_TOP_Y = 205
-BALL_START_RIGHT_X = 30
-BALL_START_BOTTOM_Y = 225
+BALL_START_LEFT_X = 800
+BALL_START_TOP_Y = 700
+BALL_START_RIGHT_X = 820
+BALL_START_BOTTOM_Y = 720
+
+BALL_HEIGHT = 20
+BALL_WIDTH = 20
 
 BALL_START_XV = 1
 BALL_START_YV = 0
@@ -66,6 +71,9 @@ class RectObj:
         self.rect_obj = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
         fill=self.fill_color, outline=self.border_color)
 
+    def debug_rect(self):
+        print("Left: %s, right: %s, top: %s, bottom: %s" % (self.left, self.right, self.top, self.bottom))
+
 class Brick(RectObj):
     pass
 
@@ -85,8 +93,8 @@ class Ball(RectObj):
         self.last_top = top
         self.last_bottom = bottom
 
-        self.x_vel = 0
-        self.y_vel = -1
+        self.x_vel = BALL_START_XV
+        self.y_vel = BALL_START_YV
 
         self.fill_color = fill_color
         self.border_color = border_color
@@ -99,6 +107,10 @@ class Ball(RectObj):
             canvas.delete(self.ball_obj)
         self.ball_obj = canvas.create_rectangle(self.left, self.top, self.right, self.bottom,
         fill=self.fill_color, outline=self.border_color)
+
+    def debug_ball(self):
+        print("last left: %s, last right: %s, last top: %s, last bottom: %s\nLeft: %s, right: %s, top: %s, bottom: %s\n" % (self.last_left, self.last_right, self.last_top, self.last_bottom,
+        self.left, self.right, self.top, self.bottom))
 
     
 
@@ -132,7 +144,48 @@ class BrickBreaker:
     # Returns face of obj that was struck (Left, Right, Top, Bottom)\
     # Should this be a member of the RectObj Class?
     def check_impact(self, obj):
+        print("Ball")
+        self.ball.debug_ball()
+        print("Paddle")
+        obj.debug_rect()
         print('Overlap')
+
+    # Function checks if the ball has impacted the paddle, if so, it returns the side of the paddle that
+    #   was hit
+    def check_paddle_impact(self):
+        # if statement to see if ball is overlapping with the paddle
+        width_positive = min(self.ball.right, self.paddle.right) >= max(self.ball.left, self.paddle.left)
+        height_positive = min(self.ball.bottom, self.paddle.bottom) >= max(self.ball.top, self.paddle.top)
+        ball_paddle_overlap = width_positive and height_positive
+        # print("width: %s, height: %s, overlap: %s" % (width_positive, height_positive, ball_paddle_overlap))
+        if ball_paddle_overlap:
+            self.check_impact(self.paddle) # Leave as debug for now, this will need to be removed
+            last_width_positive = min(self.ball.last_right, self.paddle.right) >= max(self.ball.last_left, self.paddle.left)
+            last_height_positive = min(self.ball.last_bottom, self.paddle.bottom) >= max(self.ball.last_top, self.paddle.top)
+            print("Last width: %s, last height: %s" % (last_width_positive, last_height_positive))
+
+            # Impact made on side, need to determine which side
+            if(not last_width_positive):
+                # If we know the impact was on left or right, and left of ball is left of paddle's left before impact, must hit left 
+                if self.ball.last_left < self.paddle.left:
+                    return "left"
+                else:
+                    return "right"
+            # Impact made on top or bottom
+            elif(not last_height_positive):
+                # If we know the impact was on top or bottom, and top of ball is above of paddle's top before impact, must hit top
+                if self.ball.last_top < self.paddle.top:
+                    return "top"
+                else:
+                    return "bottom"
+            # Should not happen
+            else:
+                print("How did that happen?")
+                return "none"
+        else:
+            return "none"
+
+
 
     # X1Y1 is top left, X2Y2 is bottom right
     def update_ball(self):
@@ -169,28 +222,41 @@ class BrickBreaker:
             self.ball.right = 1200
             self.ball.x_vel = self.ball.x_vel * -1
 
+        bounce_dir = "none"
+        bounce_dir = self.check_paddle_impact()
+        if bounce_dir != "none":
+            print(bounce_dir)
+            if bounce_dir == "top":
+                self.ball.top = self.paddle.top - BALL_HEIGHT
+                self.ball.bottom = self.paddle.top
+            if bounce_dir == "bottom":
+                self.ball.top = self.paddle.bottom
+                self.ball.bottom = self.paddle.bottom + BALL_HEIGHT
+            if bounce_dir == "left":
+                self.ball.left = self.paddle.left - BALL_WIDTH
+                self.ball.right = self.paddle.left
+            if bounce_dir == "right":
+                self.ball.left = self.paddle.right
+                self.ball.right = self.paddle.right + BALL_WIDTH
 
-        # if statement to see if ball is overlapping with the paddle
-        width_positive = min(self.ball.right, self.paddle.right) >= max(self.ball.left, self.paddle.left)
-        height_positive = min(self.ball.bottom, self.paddle.bottom) >= max(self.ball.top, self.paddle.top)
-        ball_paddle_overlap = width_positive and height_positive
-        # print("width: %s, height: %s, overlap: %s" % (width_positive, height_positive, ball_paddle_overlap))
-        if ball_paddle_overlap:
-            self.check_impact(self.paddle)
+            self.update_ball_vels(bounce_dir)
+        # bounce_dir = self.check_brick_impact 
+
+        
         
         # Impact with Paddle possible
-        if self.ball.bottom >= PADDLE_TOP and self.ball.top <= self.paddle.top:
-            # Impact with top
-            # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
-            # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
+        # if self.ball.bottom >= PADDLE_TOP and self.ball.top <= self.paddle.top:
+        #     # Impact with top
+        #     # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
+        #     # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
 
-            if self.ball.right >= self.paddle.left and self.ball.left <= self.paddle.right:
-                print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))
-                self.ball.top = PADDLE_TOP - 20
-                self.ball.bottom = PADDLE_TOP
-                self.update_ball_vels()
-                self.ball.y_vel = self.ball.y_vel * -1
-                print("AFTER IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))\
+        #     if self.ball.right >= self.paddle.left and self.ball.left <= self.paddle.right:
+        #         print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))
+        #         self.ball.top = PADDLE_TOP - 20
+        #         self.ball.bottom = PADDLE_TOP
+        #         self.update_ball_vels()
+        #         self.ball.y_vel = self.ball.y_vel * -1
+        #         print("AFTER IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))\
 
             # Believe this problem will be solved by adding paddle physics
 
@@ -223,16 +289,22 @@ class BrickBreaker:
         return
    
 
-    def update_ball_vels(self):
+    def update_ball_vels(self, bounce_dir):
         # Get x value for center of ball
-        ball_center = int((self.ball.right + self.ball.left) /2)
-        # Adjust center value to be relative to a hypothetical paddle from 0 to 200
-        ball_center_relative = ball_center - self.paddle.left
-        ball_dist = ball_center_relative - 100
-        ball_dist_scaled = int(ball_dist / 10)
-        print("Ball center relative: %d\nBall dist: %d\nBall dist scaled: %d" %(ball_center_relative, ball_dist, ball_dist_scaled))
-        self.ball.x_vel = ball_dist_scaled / 10
-        return
+        if bounce_dir == "top":
+            ball_center = int((self.ball.right + self.ball.left) /2)
+            # Adjust center value to be relative to a hypothetical paddle from 0 to 200
+            ball_center_relative = ball_center - self.paddle.left
+            ball_dist = ball_center_relative - 100
+            ball_dist_scaled = int(ball_dist / 10)
+            # print("Ball center relative: %d\nBall dist: %d\nBall dist scaled: %d" %(ball_center_relative, ball_dist, ball_dist_scaled))
+            self.ball.x_vel = ball_dist_scaled / 10
+        if bounce_dir == "bottom":
+            self.ball.y_vel = self.ball.y_vel * -1
+        if bounce_dir == "left" or bounce_dir == "right":
+            self.ball.y_vel = -1
+            self.ball.x_vel = self.ball.x_vel * -1
+        
 
     # Done goofed - X1Y1 is top right, X2Y2 is bottom left
 
