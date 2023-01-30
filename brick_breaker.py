@@ -37,17 +37,23 @@ PADDLE_WIDTH = 200
 # BALL_START_RIGHT_X = 610
 # BALL_START_BOTTOM_Y = 700
 
-# Debug
-BALL_START_LEFT_X = 800
-BALL_START_TOP_Y = 700
-BALL_START_RIGHT_X = 820
-BALL_START_BOTTOM_Y = 720
+# Debug - above paddle
+BALL_START_LEFT_X = 590
+BALL_START_TOP_Y = 500
+BALL_START_RIGHT_X = 610
+BALL_START_BOTTOM_Y = 520
+
+# # Debug - Right of paddle
+# BALL_START_LEFT_X = 800
+# BALL_START_TOP_Y = 700
+# BALL_START_RIGHT_X = 820
+# BALL_START_BOTTOM_Y = 720
 
 BALL_HEIGHT = 20
 BALL_WIDTH = 20
 
-BALL_START_XV = 1
-BALL_START_YV = 0
+BALL_START_XV = 0
+BALL_START_YV = 1
 
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
@@ -144,11 +150,12 @@ class BrickBreaker:
     # Returns face of obj that was struck (Left, Right, Top, Bottom)\
     # Should this be a member of the RectObj Class?
     def check_impact(self, obj):
-        print("Ball")
-        self.ball.debug_ball()
-        print("Paddle")
-        obj.debug_rect()
-        print('Overlap')
+         print('--------IMPACT---------')
+        # print("Ball")
+        # self.ball.debug_ball()
+        # print("Paddle")
+        # obj.debug_rect()
+       
 
     # Function checks if the ball has impacted the paddle, if so, it returns the side of the paddle that
     #   was hit
@@ -299,6 +306,7 @@ class BrickBreaker:
             ball_dist_scaled = int(ball_dist / 10)
             # print("Ball center relative: %d\nBall dist: %d\nBall dist scaled: %d" %(ball_center_relative, ball_dist, ball_dist_scaled))
             self.ball.x_vel = ball_dist_scaled / 10
+            self.ball.y_vel = self.ball.y_vel * -1
         if bounce_dir == "bottom":
             self.ball.y_vel = self.ball.y_vel * -1
         if bounce_dir == "left" or bounce_dir == "right":
