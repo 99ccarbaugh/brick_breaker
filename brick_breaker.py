@@ -58,6 +58,14 @@ BALL_START_YV = 1
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
 
+BRICK_HEIGHT = 20
+BRICK_WIDTH = 40
+BRICK_ROWS = 4
+BRICK_OFFSET = 0
+BRICK_START_X = 200
+BRICK_START_Y = 100
+BRICKS_PER_ROW = 20
+
 class RectObj:
     def __init__(self, id, left, right, top, bottom, fill_color, border_color, canvas):
         self.id = id
@@ -149,24 +157,21 @@ class BrickBreaker:
     # Obj can be either paddle or brick
     # Returns face of obj that was struck (Left, Right, Top, Bottom)\
     # Should this be a member of the RectObj Class?
-    def check_impact(self, obj):
-         print('--------IMPACT---------')
-        # print("Ball")
-        # self.ball.debug_ball()
-        # print("Paddle")
-        # obj.debug_rect()
+    def check_overlap(self, obj):
+        # if statement to see if ball is overlapping with the paddle
+        width_positive = min(self.ball.right, obj.right) >= max(self.ball.left, obj.left)
+        height_positive = min(self.ball.bottom, obj.bottom) >= max(self.ball.top, obj.top)
+        return width_positive and height_positive
        
 
     # Function checks if the ball has impacted the paddle, if so, it returns the side of the paddle that
     #   was hit
     def check_paddle_impact(self):
-        # if statement to see if ball is overlapping with the paddle
-        width_positive = min(self.ball.right, self.paddle.right) >= max(self.ball.left, self.paddle.left)
-        height_positive = min(self.ball.bottom, self.paddle.bottom) >= max(self.ball.top, self.paddle.top)
-        ball_paddle_overlap = width_positive and height_positive
+        
+        ball_paddle_overlap = self.check_overlap(self.paddle)
         # print("width: %s, height: %s, overlap: %s" % (width_positive, height_positive, ball_paddle_overlap))
         if ball_paddle_overlap:
-            self.check_impact(self.paddle) # Leave as debug for now, this will need to be removed
+            print('--------IMPACT---------')
             last_width_positive = min(self.ball.last_right, self.paddle.right) >= max(self.ball.last_left, self.paddle.left)
             last_height_positive = min(self.ball.last_bottom, self.paddle.bottom) >= max(self.ball.last_top, self.paddle.top)
             print("Last width: %s, last height: %s" % (last_width_positive, last_height_positive))
@@ -192,6 +197,58 @@ class BrickBreaker:
         else:
             return "none"
 
+    def check_bricks(self):
+            for brick in self.bricks:
+                ball_brick_overlap = self.check_overlap(brick)
+                if ball_brick_overlap:
+                    print("BRICK %d HIT" %(brick.id))
+                    last_width_positive = min(self.ball.last_right, brick.right) >= max(self.ball.last_left, brick.left)
+                    last_height_positive = min(self.ball.last_bottom, brick.bottom) >= max(self.ball.last_top, brick.top)
+                    print("Last width: %s, last height: %s" % (last_width_positive, last_height_positive))
+                    bounce_dir = "none"
+                    # Impact made on side, need to determine which side
+                    if(not last_width_positive):
+                        # If we know the impact was on left or right, and left of ball is left of paddle's left before impact, must hit left 
+                        if self.ball.last_left < brick.left:
+                            bounce_dir = "left"
+                        else:
+                            bounce_dir = "right"
+                    # Impact made on top or bottom
+                    elif(not last_height_positive):
+                        # If we know the impact was on top or bottom, and top of ball is above of paddle's top before impact, must hit top
+                        if self.ball.last_top < brick.top:
+                            bounce_dir = "top"
+                        else:
+                            bounce_dir = "bottom"
+                    # Should not happen
+                    else:
+                        print("How did that happen?")
+                        bounce_dir = "none"
+                else:
+                    bounce_dir = "none"
+
+                if bounce_dir != "none":
+                    print("BRICK FACE: ", bounce_dir)
+                    self.ball.last_left = self.ball.left
+                    self.ball.last_top = self.ball.top
+                    self.ball.last_right = self.ball.right
+                    self.ball.last_bottom = self.ball.bottom
+
+                    if bounce_dir == "top":
+                        self.ball.top = brick.top - BALL_HEIGHT
+                        self.ball.bottom = brick.top
+                    if bounce_dir == "bottom":
+                        self.ball.top = brick.bottom
+                        self.ball.bottom = brick.bottom + BALL_HEIGHT
+                    if bounce_dir == "left":
+                        self.ball.left = brick.left - BALL_WIDTH
+                        self.ball.right = brick.left
+                    if bounce_dir == "right":
+                        self.ball.left = brick.right
+                        self.ball.right = brick.right + BALL_WIDTH
+
+                    self.update_ball_vels(bounce_dir)
+                    
 
 
     # X1Y1 is top left, X2Y2 is bottom right
@@ -231,7 +288,9 @@ class BrickBreaker:
 
         bounce_dir = "none"
         bounce_dir = self.check_paddle_impact()
-        if bounce_dir != "none":
+        if bounce_dir == "none":
+            self.check_bricks()
+        else:
             print(bounce_dir)
             if bounce_dir == "top":
                 self.ball.top = self.paddle.top - BALL_HEIGHT
@@ -246,34 +305,8 @@ class BrickBreaker:
                 self.ball.left = self.paddle.right
                 self.ball.right = self.paddle.right + BALL_WIDTH
 
-            self.update_ball_vels(bounce_dir)
-        # bounce_dir = self.check_brick_impact 
-
+            self.update_ball_vels_paddle(bounce_dir)
         
-        
-        # Impact with Paddle possible
-        # if self.ball.bottom >= PADDLE_TOP and self.ball.top <= self.paddle.top:
-        #     # Impact with top
-        #     # print("BALL\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d \nPADDLE\nLEFT: %d RIGHT: %d TOP: %d BOTTOM: %d"
-        #     # % (self.ball_left_x, self.ball_right_x, self.ball_top_y, self.ball_bottom_y, self.paddle_left_x, self.paddle_right_x, self.paddle_top_y, self.paddle_bottom_y))
-
-        #     if self.ball.right >= self.paddle.left and self.ball.left <= self.paddle.right:
-        #         print(PADDLE_TOP, "BEFORE IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))
-        #         self.ball.top = PADDLE_TOP - 20
-        #         self.ball.bottom = PADDLE_TOP
-        #         self.update_ball_vels()
-        #         self.ball.y_vel = self.ball.y_vel * -1
-        #         print("AFTER IMPACT y1: %d, y2: %d" % (self.ball.top, self.ball.bottom))\
-
-            # Believe this problem will be solved by adding paddle physics
-
-            # Potential collision issues with 2 moving objects
-            # # Impact with left side
-            # if self.ball_right_x >= self.paddle_left_x and self.ball_left_x < self.paddle_left_x and self.ball_top_y >= self.paddle_bottom_y and self.ball_bottom_y <= self.paddle_top_y:
-            #     print("left side impact")
-        
-
-            # # Impact with right side
         self.ball.draw_ball(self.canvas)
 
 
@@ -295,8 +328,17 @@ class BrickBreaker:
         self.initialize_bricks()
         return
    
-
     def update_ball_vels(self, bounce_dir):
+            # Get x value for center of ball
+            if bounce_dir == "top":
+                self.ball.y_vel = self.ball.y_vel * -1
+            if bounce_dir == "bottom":
+                self.ball.y_vel = self.ball.y_vel * -1
+            if bounce_dir == "left" or bounce_dir == "right":
+                self.ball.x_vel = self.ball.x_vel * -1
+
+
+    def update_ball_vels_paddle(self, bounce_dir):
         # Get x value for center of ball
         if bounce_dir == "top":
             ball_center = int((self.ball.right + self.ball.left) /2)
@@ -329,52 +371,15 @@ class BrickBreaker:
 
     def initialize_bricks(self):
         self.bricks = []
-        for i in range(0, 1):
-            print("i: %s" % i)
-            self.bricks.append(Brick(i, 580, 620, 200, 220, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas))
-
-    def check_bricks(self):
-        for brick in self.bricks:
-            # Could nest some of these ifs (TOP/Bottom + Left/Right)
-            # Bottom
-            if self.ball.top <= brick.bottom and self.ball.bottom >= brick.bottom and self.ball.right >= brick.left and self.ball.left <= brick.right:
-                print("IMPACT Bottom")
-                self.ball.y_vel = self.ball.y_vel * -1
-                self.ball.last_top = self.ball.top
-                self.ball.last_bottom = self.ball.bottom
-
-                self.ball.top = brick.bottom
-                self.ball.bottom = brick.bottom + 20
-
-
-            # Top
-            elif self.ball.top <= brick.top and self.ball.bottom >= brick.top and self.ball.right >= brick.left and self.ball.left <= brick.right:
-                print("IMPACT Top")
-                self.ball.y_vel = self.ball.y_vel * -1
-                self.ball.last_top = self.ball.top
-                self.ball.last_bottom = self.ball.bottom
-
-                self.ball.top = brick.top - 20
-                self.ball.bottom = brick.top
-
-            # Left
-
-            elif self.ball.right >= brick.left and self.ball.left <= brick.left and self.ball.top <= brick.bottom and self.ball.bottom >= brick.top:
-                print("IMPACT Left")
-                self.ball.x_vel = self.ball.x_vel * -1
-                self.ball.last_left = self.ball.left
-                self.ball.last_right = self.ball.right
-
-                self.ball.left = brick.left - 20
-                self.ball.right = brick.left
-
-            # Right
-
-
-
-            self.ball.draw_ball(self.canvas)
-
-            return
+        cur_brick_x = BRICK_START_X
+        cur_brick_y = BRICK_START_Y
+        for i in range(0, BRICK_ROWS):
+            for j in range(0, BRICKS_PER_ROW):
+                # X1 X2 Y1 Y2
+                self.bricks.append(Brick(len(self.bricks), cur_brick_x, cur_brick_x + BRICK_WIDTH, cur_brick_y, cur_brick_y + BRICK_HEIGHT, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas))
+                cur_brick_x += BRICK_WIDTH
+            cur_brick_x = BRICK_START_X    
+            cur_brick_y += BRICK_HEIGHT
 
 
     def update_game(self):
