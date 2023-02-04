@@ -198,7 +198,8 @@ class BrickBreaker:
             return "none"
 
     def check_bricks(self):
-            for brick in self.bricks:
+            for brick_id in self.bricks:
+                brick = self.bricks[brick_id]
                 ball_brick_overlap = self.check_overlap(brick)
                 if ball_brick_overlap:
                     print("BRICK %d HIT" %(brick.id))
@@ -248,6 +249,8 @@ class BrickBreaker:
                         self.ball.right = brick.right + BALL_WIDTH
 
                     self.update_ball_vels(bounce_dir)
+                    self.update_bricks(brick_id)
+                    break
                     
 
 
@@ -370,17 +373,28 @@ class BrickBreaker:
         self.update_paddle(event.x)
 
     def initialize_bricks(self):
-        self.bricks = []
+        self.bricks = {}
         cur_brick_x = BRICK_START_X
         cur_brick_y = BRICK_START_Y
         for i in range(0, BRICK_ROWS):
             for j in range(0, BRICKS_PER_ROW):
                 # X1 X2 Y1 Y2
-                self.bricks.append(Brick(len(self.bricks), cur_brick_x, cur_brick_x + BRICK_WIDTH, cur_brick_y, cur_brick_y + BRICK_HEIGHT, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas))
+                self.bricks[len(self.bricks)] = Brick(len(self.bricks), cur_brick_x, cur_brick_x + BRICK_WIDTH, cur_brick_y, cur_brick_y + BRICK_HEIGHT, GREEN_COLOR, BLUE_COLOR_LIGHT, self.canvas)
                 cur_brick_x += BRICK_WIDTH
             cur_brick_x = BRICK_START_X    
             cur_brick_y += BRICK_HEIGHT
 
+
+
+
+    def update_bricks(self, dead_brick):
+        for brick_id in self.bricks:
+            self.canvas.delete(self.bricks[brick_id].rect_obj)
+        self.bricks.pop(dead_brick)
+        for brick_id in self.bricks:
+            self.bricks[brick_id].draw_rect(self.canvas)
+        print("BRICKS REMAINING: ", len(self.bricks))
+        return
 
     def update_game(self):
         self.update_ball()
