@@ -58,11 +58,11 @@ BALL_START_YV = 1
 PADDLE_MOVE_SPEED = 30
 BALL_MOVE_SPEED = 30
 
-BRICK_HEIGHT = 20
-BRICK_WIDTH = 40
+BRICK_HEIGHT = 25
+BRICK_WIDTH = 55
 BRICK_ROWS = 4
 BRICK_OFFSET = 0
-BRICK_START_X = 200
+BRICK_START_X = 50
 BRICK_START_Y = 100
 BRICKS_PER_ROW = 20
 
@@ -309,6 +309,9 @@ class BrickBreaker:
                 self.ball.right = self.paddle.right + BALL_WIDTH
 
             self.update_ball_vels_paddle(bounce_dir)
+
+        if self.ball.bottom >= BOTTOM_BOUND:
+            self.game_over = True
         
         self.ball.draw_ball(self.canvas)
 
@@ -321,6 +324,7 @@ class BrickBreaker:
         self.initialize_game_objs()
 
     def initialize_game_objs(self):
+        self.game_over = False
         # Initialize paddle
         self.paddle = Paddle(0, PADDLE_START_LEFT_X, PADDLE_START_RIGHT_X, PADDLE_START_TOP_Y, PADDLE_START_BOTTOM_Y,
             RED_COLOR_LIGHT, BLUE_COLOR, self.canvas)
@@ -370,7 +374,8 @@ class BrickBreaker:
         self.paddle.draw_rect(self.canvas)
 
     def motion(self, event):
-        self.update_paddle(event.x)
+        if not self.game_over:
+            self.update_paddle(event.x)
 
     def initialize_bricks(self):
         self.bricks = {}
@@ -384,32 +389,40 @@ class BrickBreaker:
             cur_brick_x = BRICK_START_X    
             cur_brick_y += BRICK_HEIGHT
 
-
-
-
     def update_bricks(self, dead_brick):
         for brick_id in self.bricks:
             self.canvas.delete(self.bricks[brick_id].rect_obj)
-        self.bricks.pop(dead_brick)
+        self.bricks.pop(dead_brick) 
         for brick_id in self.bricks:
             self.bricks[brick_id].draw_rect(self.canvas)
-        print("BRICKS REMAINING: ", len(self.bricks))
-        return
+        if len(self.bricks) == 0:
+            self.game_over = True
 
     def update_game(self):
         self.update_ball()
         self.check_bricks()
 
+    def display_gameover(self):
+        self.canvas.delete("all")
+        score_text = "Game Over\nClick to play again \n"
+        self.canvas.create_text(
+            400,
+            600,
+            font="cmr 20 bold",
+            fill="gray",
+            text=score_text,
+        )
+
     def mainloop(self):
         while True:
             self.window.update()
             if self.begin:
-                self.window.after(DELAY, self.update_game())
-                self.last_key = "None"
-                # Define end state later
-                # else:
-                #     self.begin = False
-                #     self.display_gameover()
+                if not self.game_over:
+                    self.window.after(DELAY, self.update_game())
+                    self.last_key = "None"
+                else:
+                    self.begin = False
+                    self.display_gameover()
 
 
 game_instance = BrickBreaker()
